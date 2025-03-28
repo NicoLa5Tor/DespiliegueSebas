@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoja de Ruta Comercialización (Prototipo V4.2 - Navegación Corregida)</title>
+
+    <!-- CSS (Sin cambios respecto a V4/V4.1) -->
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";margin:0;background-color:#f8f9fa;color:#212529;line-height:1.6}
+        .app-container{display:flex;min-height:100vh}
+        .sidebar{width:280px;background-color:#343a40;color:#dee2e6;padding:25px;display:flex;flex-direction:column;box-shadow:2px 0 8px rgba(0,0,0,.15);flex-shrink:0}
+        .sidebar h2{text-align:center;margin-bottom:25px;color:#fff;font-weight:500}
+        .sidebar nav ul{list-style:none;padding:0;margin:0;flex-grow:1}
+        .sidebar nav ul li{margin-bottom:12px}
+        .sidebar nav ul li a{color:#ced4da;text-decoration:none;display:flex;align-items:center;padding:10px 12px;border-radius:5px;transition:background-color .2s ease,color .2s ease;font-size:.95rem}
+        .sidebar nav ul li a:hover{background-color:#495057;color:#fff}
+        .sidebar nav ul li a.active{background-color:#0d6efd;color:#fff;font-weight:500}
+        .status-indicator{margin-left:auto;font-size:1.1em;color:#6c757d;opacity:0;transition:opacity .3s ease}
+        .status-indicator.completed{opacity:1;color:#198754}
+        .status-indicator.completed::before{content:"✓";font-weight:bold}
+        .user-info{margin-top:25px;border-top:1px solid #495057;padding-top:20px;font-size:.9em;color:#adb5bd}
+        .user-info p{margin-bottom:10px}
+        .user-info button{background-color:#dc3545;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;margin-top:5px;width:100%;font-size:.9rem;transition:background-color .2s ease}
+        .user-info button:hover{background-color:#bb2d3b}
+        .main-content{flex-grow:1;padding:35px 45px;background-color:#fff;overflow-y:auto}
+        /* CLAVE: Ocultar secciones por defecto */
+        .content-section{display:none;animation:fadeIn .4s ease-in-out}
+        /* CLAVE: Mostrar la sección activa */
+        .content-section.active{display:block}
+        @keyframes fadeIn{0%{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        h1{color:#212529;border-bottom:3px solid #0d6efd;padding-bottom:12px;margin-bottom:30px;font-weight:600}
+        h2{color:#343a40;margin-top:40px;margin-bottom:20px;padding-bottom:5px;border-bottom:1px solid #dee2e6;font-weight:500}
+        .form-group{margin-bottom:25px}
+        .form-group label{display:block;margin-bottom:8px;font-weight:500;color:#495057;font-size:.9rem}
+        .form-group label small{font-weight:normal;color:#6c757d;display:block;font-size:.8rem;margin-top:2px}
+        .editable-div { width: 100%; min-height: 100px; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; font-size: 1rem; line-height: 1.6; background-color: #fff; cursor: text; overflow-y: auto; transition: border-color .2s ease,box-shadow .2s ease; }
+        .editable-div:focus { border-color:#86b7fe; outline:0; box-shadow:0 0 0 .25rem rgba(13,110,253,.25); }
+        .editable-div[placeholder]:empty:before { content: attr(placeholder); color: #6c757d; pointer-events: none; display: block; }
+        .form-group input[type=text], .form-group select{width:100%;padding:12px 15px;border:1px solid #ced4da;border-radius:5px;box-sizing:border-box;font-size:1rem;transition:border-color .2s ease,box-shadow .2s ease}
+        .form-group input[type=text]:focus, .form-group select:focus{border-color:#86b7fe;outline:0;box-shadow:0 0 0 .25rem rgba(13,110,253,.25)}
+        .form-group .checkbox-group label{display:inline-block;margin-bottom:8px;font-weight:normal;margin-left:8px;margin-right:20px;font-size:.95rem;cursor:pointer}
+        .form-group .checkbox-group input[type=checkbox]{margin-right:5px;vertical-align:middle}
+        .form-group .sub-input{display:block;margin-top:8px;max-width:400px}
+        button.save-btn, button#create-project-btn, button#save-project-info-btn { background-color:#198754;color:#fff;padding:12px 25px;border:none;border-radius:5px;cursor:pointer;font-size:1rem;font-weight:500;transition:background-color .2s ease;margin-top:15px; margin-right: 10px; }
+        button.save-btn:hover, button#create-project-btn:hover, button#save-project-info-btn:hover { background-color:#157347 }
+        button#create-project-btn { background-color:#0d6efd; }
+        button#create-project-btn:hover { background-color:#0b5ed7; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .feedback-placeholder{margin-top:25px;font-style:italic;color:#6c757d;border-left:4px solid #adb5bd;padding:10px 15px;background-color:#f8f9fa;border-radius:4px;font-size:.9rem}
+        .creator-credit { text-align: right; font-size: 0.8em; color: #adb5bd; margin-top: 30px; }
+        #project-info-display { margin-top: 25px; padding: 20px; background-color: #e9ecef; border-radius: 5px; border: 1px solid #dee2e6; }
+        #project-info-display p { color: #495057; margin-bottom: 8px;}
+        #project-info-display strong { color: #343a40; }
+        #project-info-display .value { color: #212529; }
+        #project-info-display .value.pre-wrap { white-space: pre-wrap; word-wrap: break-word; }
+        #resumen-section .summary-section { margin-bottom: 30px; }
+        #resumen-section .summary-section h2 { margin-top: 0; }
+        #resumen-section p { margin-bottom: 10px; }
+        #resumen-section strong { color: #495057; margin-right: 8px; display: block; margin-bottom: 3px; }
+        #resumen-section .summary-value { display: block; color: #212529; white-space: normal; word-wrap: break-word; border: 1px solid #e9ecef; padding: 10px; background-color: #f8f9fa; min-height: 1.5em; border-radius: 4px; }
+        #resumen-section .summary-value.no-data { color: #6c757d; font-style: italic; border: 1px dashed #ced4da; background-color: transparent; white-space: normal; }
+        #resumen-section .summary-value img { max-width: 100%; height: auto; display: block; margin: 10px 0; border: 1px solid #dee2e6; border-radius: 4px; }
+        #resumen-section .summary-value table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em; }
+        #resumen-section .summary-value th, #resumen-section .summary-value td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+        #resumen-section .summary-value th { background-color: #e9ecef; font-weight: bold; }
+        #resumen-section .summary-value a { color: #0d6efd; text-decoration: underline; }
+        #resumen-section .summary-value a:hover { color: #0a58ca; }
+        #resumen-section hr { margin: 40px 0; border: 0; border-top: 2px solid #0d6efd; opacity: 0.5; }
+        #resumen-section .checkbox-summary { margin-bottom: 15px; }
+        #resumen-section .checkbox-summary strong { display: inline-block; margin-bottom: 8px; }
+        #resumen-section .checkbox-summary ul { list-style: disc; margin-left: 20px; padding-left: 10px; margin-top: 0; }
+        #resumen-section .checkbox-summary li { margin-bottom: 5px; }
+        #resumen-section .checkbox-summary .otros-value { font-style: italic; margin-left: 0; display: block; margin-top: 5px; }
+        #resumen-section .checkbox-summary .no-data { color: #6c757d; font-style: italic; list-style: none; margin-left: 0; padding-left: 0; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <!-- Sidebar Content -->
+             <h2>Comercialización</h2>
+            <nav>
+                <ul>
+                    <li><a href="#" data-section="dashboard" class="nav-link active">Dashboard</a> <span class="status-indicator" id="status-dashboard"></span></li>
+                    <li><a href="#" data-section="segmento" class="nav-link">1. Segmento Mercado</a> <span class="status-indicator" id="status-segmento"></span></li>
+                    <li><a href="#" data-section="canales" class="nav-link">2. Tipos de Canales</a> <span class="status-indicator" id="status-canales"></span></li>
+                    <li><a href="#" data-section="estructura" class="nav-link">3. Estructura Comercialización</a> <span class="status-indicator" id="status-estructura"></span></li>
+                    <li><a href="#" data-section="venta" class="nav-link">4. Tipos de Venta</a> <span class="status-indicator" id="status-venta"></span></li>
+                    <li><a href="#" data-section="redes" class="nav-link">5. Redes Comercialización</a> <span class="status-indicator" id="status-redes"></span></li>
+                    <li><a href="#" data-section="cadena" class="nav-link">6. Cadena de Valor</a> <span class="status-indicator" id="status-cadena"></span></li>
+                    <li><a href="#" data-section="resumen" class="nav-link">Ver Resumen del Plan</a> <span class="status-indicator" id="status-resumen"></span></li>
+                </ul>
+            </nav>
+             <div class="user-info">
+                <p>Usuario: Estudiante Ejemplo</p>
+                <button id="logout-button">Cerrar Sesión (Simulado)</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Sección Dashboard -->
+            <!-- Asegúrate que tenga id="dashboard-section" y class="content-section active" (o solo content-section si no es la inicial) -->
+            <section id="dashboard-section" class="content-section active">
+                <h1>Dashboard del Proyecto</h1>
+                <!-- Contenido del Dashboard -->
+                 <p>Bienvenido. Ingresa los datos básicos de tu proyecto.</p>
+                <form id="form-project-info">
+                     <div class="form-group">
+                        <label for="project-name-input">Nombre del Emprendimiento:</label>
+                        <input type="text" id="project-name-input" name="project_name" placeholder="Ej: EcoSoluciones Tech">
+                    </div>
+                     <div class="form-group">
+                        <label for="team-members-input">Integrantes del Equipo:</label>
+                        <div id="team-members-input" class="editable-div" contenteditable="true" placeholder="Escribe o pega los nombres aquí. Puedes pegar contenido formateado simple."></div>
+                    </div>
+                    <button type="button" id="save-project-info-btn">Guardar Info del Proyecto</button>
+                </form>
+                 <div id="project-info-display" style="display: none;">
+                    <h2>Información del Proyecto Guardada</h2>
+                    <p><strong>Nombre:</strong> <span id="display-project-name" class="value"></span></p>
+                    <p><strong>Integrantes:</strong></p>
+                    <div id="display-team-members" class="value"></div>
+                 </div>
+                 <hr style="margin: 30px 0;">
+                 <p>Navega por las secciones (1 a 6) para completar tu plan. Los cuadros de texto ahora son editables y permiten pegar contenido (imágenes, tablas) desde otras fuentes (funcionalidad básica del navegador).</p>
+                 <div class="feedback-placeholder" style="border-color: #dc3545; color: #dc3545;">
+                     <strong>Advertencia de Seguridad:</strong> Pegar contenido puede introducir HTML complejo o scripts. Esta herramienta es un prototipo y **NO sanitiza** este contenido, lo cual es un **riesgo de seguridad (XSS)** en aplicaciones reales. ¡Úsalo con precaución!
+                 </div>
+                <button id="create-project-btn" style="margin-top: 20px;">Crear Nuevo Proyecto (Simulado)</button>
+                <p class="creator-credit">Created by Sebastian Pulido Forero</p>
+            </section>
+
+            <!-- Sección Segmento de Mercado -->
+            <!-- Asegúrate que tenga id="segmento-section" y class="content-section" -->
+            <section id="segmento-section" class="content-section">
+                <h1>1. Segmento de Mercado</h1>
+                <!-- Contenido de la sección 1 -->
+                 <p style="font-style: italic; color: #6c757d;">Puedes escribir o pegar contenido enriquecido (imágenes, tablas simples, texto formateado) en los siguientes campos.</p>
+                <form id="form-segmento">
+                    <div class="form-group"> <label for="segmento-necesidad">Necesidad o Problema Principal:</label> <div id="segmento-necesidad" class="editable-div" contenteditable="true" placeholder="Describe la necesidad..."></div> </div>
+                    <div class="form-group"> <label for="segmento-demografia">Perfil Demográfico:</label> <div id="segmento-demografia" class="editable-div" contenteditable="true" placeholder="Edad, género, ingresos..."></div> </div>
+                    <div class="form-group"> <label for="segmento-psicografia">Perfil Psicográfico:</label> <div id="segmento-psicografia" class="editable-div" contenteditable="true" placeholder="Estilo de vida, valores..."></div> </div>
+                    <div class="form-group"> <label for="segmento-geografia">Perfil Geográfico:</label> <div id="segmento-geografia" class="editable-div" contenteditable="true" placeholder="Ubicación, alcance..."></div> </div>
+                    <div class="form-group"> <label for="segmento-conductual">Perfil Conductual:</label> <div id="segmento-conductual" class="editable-div" contenteditable="true" placeholder="Comportamiento de compra..."></div> </div>
+                    <div class="form-group"> <label for="segmento-tamano">Tamaño y Potencial del Mercado:</label> <div id="segmento-tamano" class="editable-div" contenteditable="true" placeholder="Estimación TAM, SAM, SOM..."></div> </div>
+                    <div class="form-group"> <label for="segmento-justificacion">Justificación Académica / Fuentes:</label> <div id="segmento-justificacion" class="editable-div" contenteditable="true" placeholder="Referencias, estudios..."></div> </div>
+                    <button type="button" class="save-btn" data-section="segmento">Guardar Sección 1</button>
+                    <p class="feedback-placeholder"><em>(Comentarios del docente)</em></p>
+                    <p class="creator-credit">Created by Sebastian Pulido Forero</p>
+                </form>
+            </section>
+
+            <!-- Sección Tipos de Canales -->
+            <!-- Asegúrate que tenga id="canales-section" y class="content-section" -->
+            <section id="canales-section" class="content-section">
+                <h1>2. Tipos de Canales</h1>
+                 <!-- Contenido de la sección 2 -->
+                 <p style="font-style: italic; color: #6c757d;">Puedes usar contenido enriquecido en el campo de justificación.</p>
+                <form id="form-canales">
+                     <div class="form-group">
+                        <label>Comunicación/Marketing Online:</label>
+                        <div class="checkbox-group"> <input type="checkbox" id="canal-web-mkt" name="canales_com_online" value="Sitio Web / Blog Corporativo"> <label for="canal-web-mkt">Sitio Web / Blog Corporativo</label><br> <input type="checkbox" id="canal-seo-sem" name="canales_com_online" value="SEO (Orgánico) y SEM (Pago)"> <label for="canal-seo-sem">SEO (Orgánico) y SEM (Pago)</label><br> <input type="checkbox" id="canal-rrss-mkt" name="canales_com_online" value="Redes Sociales (Orgánico/Pago)"> <label for="canal-rrss-mkt">Redes Sociales (Orgánico/Pago)</label><br> <input type="checkbox" id="canal-email-mkt" name="canales_com_online" value="Email Marketing / Newsletters"> <label for="canal-email-mkt">Email Marketing / Newsletters</label><br> <input type="checkbox" id="canal-contenido" name="canales_com_online" value="Marketing de Contenidos (Artículos, Videos, Podcast)"> <label for="canal-contenido">Marketing de Contenidos</label><br> <input type="checkbox" id="canal-influencer" name="canales_com_online" value="Marketing de Influencers"> <label for="canal-influencer">Marketing de Influencers</label><br> <input type="checkbox" id="canal-afiliados-mkt" name="canales_com_online" value="Programas de Afiliados"> <label for="canal-afiliados-mkt">Programas de Afiliados</label><br> <input type="checkbox" id="canal-pr-online" name="canales_com_online" value="Relaciones Públicas Online / Medios Digitales"> <label for="canal-pr-online">RRPP Online / Medios Digitales</label><br> <label for="canales-com-online-otros" class="sub-input-label">Otros Online:</label> <input type="text" id="canales-com-online-otros" name="canales_com_online_otros" class="sub-input" placeholder="Webinars, comunidades online, etc."> </div>
+                    </div>
+                     <div class="form-group">
+                        <label>Distribución/Venta Online:</label>
+                        <div class="checkbox-group"> <input type="checkbox" id="canal-ecommerce" name="canales_venta_online" value="E-commerce Propio"> <label for="canal-ecommerce">E-commerce Propio</label><br> <input type="checkbox" id="canal-app" name="canales_venta_online" value="Aplicación Móvil Propia"> <label for="canal-app">Aplicación Móvil Propia</label><br> <input type="checkbox" id="canal-marketplace-venta" name="canales_venta_online" value="Marketplaces (Amazon, Etsy, App Store, etc.)"> <label for="canal-marketplace-venta">Marketplaces</label><br> <input type="checkbox" id="canal-api" name="canales_venta_online" value="API para Integración con Terceros"> <label for="canal-api">API para Integración</label><br> <input type="checkbox" id="canal-rrss-venta" name="canales_venta_online" value="Venta directa por Redes Sociales"> <label for="canal-rrss-venta">Venta por Redes Sociales</label><br> <label for="canales-venta-online-otros" class="sub-input-label">Otros Online:</label> <input type="text" id="canales-venta-online-otros" name="canales_venta_online_otros" class="sub-input" placeholder="Plataformas de suscripción, etc."> </div>
+                    </div>
+                     <div class="form-group">
+                        <label>Canales Físicos:</label>
+                         <div class="checkbox-group"> <input type="checkbox" id="canal-tienda-fisica" name="canales_fisicos" value="Tienda(s) Física(s) Propia(s)"> <label for="canal-tienda-fisica">Tienda(s) Física(s) Propia(s)</label><br> <input type="checkbox" id="canal-distribuidores" name="canales_fisicos" value="Distribuidores / Mayoristas"> <label for="canal-distribuidores">Distribuidores / Mayoristas</label><br> <input type="checkbox" id="canal-retailers" name="canales_fisicos" value="Minoristas (Supermercados, tiendas especializadas)"> <label for="canal-retailers">Minoristas</label><br> <input type="checkbox" id="canal-ferias-eventos" name="canales_fisicos" value="Ferias / Eventos del Sector"> <label for="canal-ferias-eventos">Ferias / Eventos</label><br> <input type="checkbox" id="canal-fuerza-ventas" name="canales_fisicos" value="Fuerza de Ventas Directa (Propia o Externa)"> <label for="canal-fuerza-ventas">Fuerza de Ventas Directa</label><br> <input type="checkbox" id="canal-popups" name="canales_fisicos" value="Pop-up Stores / Kioscos"> <label for="canal-popups">Pop-up Stores / Kioscos</label><br> <input type="checkbox" id="canal-franquicias" name="canales_fisicos" value="Franquicias"> <label for="canal-franquicias">Franquicias</label><br> <input type="checkbox" id="canal-pr-offline" name="canales_fisicos" value="Publicidad Tradicional / RRPP Offline"> <label for="canal-pr-offline">Publicidad Tradicional / RRPP Offline</label><br> <label for="canales-fisicos-otros" class="sub-input-label">Otros Físicos:</label> <input type="text" id="canales-fisicos-otros" name="canales_fisicos_otros" class="sub-input" placeholder="Venta por catálogo, telemarketing, etc."> </div>
+                    </div>
+                     <div class="form-group">
+                        <label for="canales-justificacion">Justificación y Estrategia de Canales:</label>
+                        <div id="canales-justificacion" class="editable-div" contenteditable="true" placeholder="Explica por qué elegiste estos canales..."></div>
+                    </div>
+                    <button type="button" class="save-btn" data-section="canales">Guardar Sección 2</button>
+                     <p class="feedback-placeholder"><em>(Comentarios del docente)</em></p>
+                     <p class="creator-credit">Created by Sebastian Pulido Forero</p>
+                </form>
+            </section>
+
+            <!-- Sección Estructura -->
+             <!-- Asegúrate que tenga id="estructura-section" y class="content-section" -->
+            <section id="estructura-section" class="content-section">
+                 <h1>3. Estructura de Comercialización</h1>
+                 <!-- Contenido de la sección 3 -->
+                 <p style="font-style: italic; color: #6c757d;">Puedes usar contenido enriquecido en los campos de texto.</p>
+                 <form id="form-estructura">
+                    <div class="form-group"> <label for="estructura-modelo">Modelo Principal:</label> <select id="estructura-modelo" name="modelo_principal"> <option value="">Seleccione...</option> <option value="directo">Directo</option> <option value="indirecto">Indirecto</option> <option value="hibrido">Híbrido</option> </select> </div>
+                    <div class="form-group"> <label for="estructura-intermediarios-detalle">Tipos de Intermediarios:</label> <div id="estructura-intermediarios-detalle" class="editable-div" contenteditable="true" placeholder="Distribuidores, minoristas..."></div> </div>
+                    <div class="form-group"> <label for="estructura-roles">Roles y Responsabilidades:</label> <div id="estructura-roles" class="editable-div" contenteditable="true" placeholder="Quién hace qué..."></div> </div>
+                    <div class="form-group"> <label for="estructura-costos">Costos y Márgenes:</label> <div id="estructura-costos" class="editable-div" contenteditable="true" placeholder="Márgenes, costos operativos..."></div> </div>
+                    <div class="form-group"> <label for="estructura-alcance">Alcance Geográfico:</label> <div id="estructura-alcance" class="editable-div" contenteditable="true" placeholder="Cobertura nacional, regional..."></div> </div>
+                    <div class="form-group"> <label for="estructura-justificacion">Justificación:</label> <div id="estructura-justificacion" class="editable-div" contenteditable="true" placeholder="Por qué este modelo..."></div> </div>
+                    <button type="button" class="save-btn" data-section="estructura">Guardar Sección 3</button>
+                    <p class="feedback-placeholder"><em>(Comentarios del docente)</em></p>
+                    <p class="creator-credit">Created by Sebastian Pulido Forero</p>
+                </form>
+            </section>
+
+            <!-- Sección Venta -->
+            <!-- Asegúrate que tenga id="venta-section" y class="content-section" -->
+            <section id="venta-section" class="content-section">
+                <h1>4. Tipos y Proceso de Venta</h1>
+                <!-- Contenido de la sección 4 -->
+                 <p style="font-style: italic; color: #6c757d;">Puedes usar contenido enriquecido en los campos de texto.</p>
+                <form id="form-venta">
+                    <div class="form-group"> <label for="venta-tipo">Modelo Ingresos / Venta Principal:</label> <select id="venta-tipo" name="tipo_venta_principal"> <option value="">Seleccione...</option> <option value="venta_unica_producto">Venta Única Producto Físico</option> <option value="venta_unica_digital">Venta Única Producto Digital</option> <option value="saas">SaaS</option> <option value="suscripcion_contenido">Suscripción Contenido</option> <option value="suscripcion_producto">Suscripción Producto Físico</option> <option value="servicios_puntuales">Servicios Puntuales</option> <option value="servicios_recurrentes">Servicios Recurrentes</option> <option value="licenciamiento">Licenciamiento</option> <option value="freemium">Freemium</option> <option value="marketplace_fees">Comisiones Marketplace</option> <option value="publicidad">Publicidad</option> <option value="venta_consultiva">Venta Consultiva</option> <option value="venta_transaccional">Venta Transaccional</option> <option value="dropshipping">Dropshipping</option> <option value="afiliacion">Afiliación</option> <option value="otro">Otro</option> </select> </div>
+                    <div class="form-group"> <label for="venta-proceso">Descripción Proceso Venta (y Tipo si 'Otro'):</label> <div id="venta-proceso" class="editable-div" contenteditable="true" placeholder="Pasos desde lead a cierre..."></div> </div>
+                    <div class="form-group"> <label for="venta-pricing">Estrategia de Precios:</label> <div id="venta-pricing" class="editable-div" contenteditable="true" placeholder="Basado en valor, costo plus..."></div> </div>
+                    <div class="form-group"> <label for="venta-margen">Márgenes y Rentabilidad:</label> <div id="venta-margen" class="editable-div" contenteditable="true" placeholder="Margen bruto, neto..."></div> </div>
+                    <button type="button" class="save-btn" data-section="venta">Guardar Sección 4</button>
+                    <p class="feedback-placeholder"><em>(Comentarios del docente)</em></p>
+                    <p class="creator-credit">Created by Sebastian Pulido Forero</p>
+                </form>
+            </section>
+
+            <!-- Sección Redes -->
+             <!-- Asegúrate que tenga id="redes-section" y class="content-section" -->
+            <section id="redes-section" class="content-section">
+                <h1>5. Redes de Comercialización y Alianzas</h1>
+                 <!-- Contenido de la sección 5 -->
+                 <p style="font-style: italic; color: #6c757d;">Puedes usar contenido enriquecido en los campos de texto.</p>
+                 <form id="form-redes">
+                    <div class="form-group"> <label for="redes-alianzas">Tipos de Alianzas:</label> <div id="redes-alianzas" class="editable-div" contenteditable="true" placeholder="Socios de distribución, tecnológicos..."></div> </div>
+                    <div class="form-group"> <label for="redes-objetivos">Objetivos Alianzas:</label> <div id="redes-objetivos" class="editable-div" contenteditable="true" placeholder="Acceso a mercados..."></div> </div>
+                    <div class="form-group"> <label for="redes-condiciones">Valor Intercambiado:</label> <div id="redes-condiciones" class="editable-div" contenteditable="true" placeholder="Comisiones, leads..."></div> </div>
+                    <div class="form-group"> <label for="redes-gestion">Gestión Alianzas:</label> <div id="redes-gestion" class="editable-div" contenteditable="true" placeholder="Responsable, métricas..."></div> </div>
+                    <button type="button" class="save-btn" data-section="redes">Guardar Sección 5</button>
+                    <p class="feedback-placeholder"><em>(Comentarios del docente)</em></p>
+                    <p class="creator-credit">Created by Sebastian Pulido Forero</p>
+                 </form>
+            </section>
+
+            <!-- Sección Cadena de Valor -->
+             <!-- Asegúrate que tenga id="cadena-section" y class="content-section" -->
+            <section id="cadena-section" class="content-section">
+                <h1>6. Cadena de Valor</h1>
+                 <!-- Contenido de la sección 6 -->
+                 <p style="font-style: italic; color: #6c757d;">Puedes usar contenido enriquecido en los campos de texto.</p>
+                <form id="form-cadena">
+                    <div class="form-group"> <label for="cadena-modelo">Modelo Cadena Valor:</label> <div id="cadena-modelo" class="editable-div" contenteditable="true" placeholder="Actividades primarias y de apoyo..."></div> </div>
+                    <div class="form-group"> <label for="cadena-actividades">Actividades Clave:</label> <div id="cadena-actividades" class="editable-div" contenteditable="true" placeholder="Tareas importantes..."></div> </div>
+                    <div class="form-group"> <label for="cadena-recursos">Recursos Clave:</label> <div id="cadena-recursos" class="editable-div" contenteditable="true" placeholder="Personas, tecnología..."></div> </div>
+                    <div class="form-group"> <label for="cadena-ventaja">Ventaja Competitiva:</label> <div id="cadena-ventaja" class="editable-div" contenteditable="true" placeholder="Dónde generas más valor..."></div> </div>
+                    <div class="form-group"> <label for="cadena-optimizacion">Optimizaciones:</label> <div id="cadena-optimizacion" class="editable-div" contenteditable="true" placeholder="Mejoras, tercerización..."></div> </div>
+                    <button type="button" class="save-btn" data-section="cadena">Guardar Sección 6</button>
+                     <p class="feedback-placeholder"><em>(Comentarios del docente)</em></p>
+                     <p class="creator-credit">Created by Sebastian Pulido Forero</p>
+                </form>
+            </section>
+
+            <!-- Sección Resumen -->
+            <!-- Asegúrate que tenga id="resumen-section" y class="content-section" -->
+            <section id="resumen-section" class="content-section">
+                 <h1>Resumen del Plan de Comercialización</h1>
+                 <!-- Contenido del Resumen (sin cambios estructurales) -->
+                 <div class="summary-section"> <h2>Información del Proyecto</h2> <p><strong>Nombre del Emprendimiento:</strong> <span id="resumen-project-name" class="summary-value"></span></p> <p><strong>Integrantes del Equipo:</strong> <span id="resumen-team-members" class="summary-value"></span></p> </div> <hr>
+                 <p style="margin-bottom: 30px; font-style: italic;">Resumen de la información ingresada...</p> <div class="feedback-placeholder" style="border-color: #dc3545; color: #dc3545; margin-bottom: 30px;"><strong>Recordatorio de Seguridad...</strong></div>
+                 <div class="summary-section"> <h2>1. Segmento Mercado</h2> <p><strong>Necesidad/Problema:</strong> <span id="resumen-segmento-necesidad" class="summary-value"></span></p> <p><strong>Demográfico:</strong> <span id="resumen-segmento-demografia" class="summary-value"></span></p> <p><strong>Psicográfico:</strong> <span id="resumen-segmento-psicografia" class="summary-value"></span></p> <p><strong>Geográfico:</strong> <span id="resumen-segmento-geografia" class="summary-value"></span></p> <p><strong>Conductual:</strong> <span id="resumen-segmento-conductual" class="summary-value"></span></p> <p><strong>Tamaño/Potencial:</strong> <span id="resumen-segmento-tamano" class="summary-value"></span></p> <p><strong>Justificación/Fuentes:</strong> <span id="resumen-segmento-justificacion" class="summary-value"></span></p> </div><hr>
+                 <div class="summary-section"> <h2>2. Tipos de Canales</h2> <div class="checkbox-summary"><strong>Comunicación/Mkt Online:</strong><ul id="resumen-canales-com-online"></ul><div id="resumen-canales-com-online-otros"></div></div> <div class="checkbox-summary"><strong>Distribución/Venta Online:</strong><ul id="resumen-canales-venta-online"></ul><div id="resumen-canales-venta-online-otros"></div></div> <div class="checkbox-summary"><strong>Canales Físicos:</strong><ul id="resumen-canales-fisicos"></ul><div id="resumen-canales-fisicos-otros"></div></div> <p><strong>Justificación Estrategia:</strong> <span id="resumen-canales-justificacion" class="summary-value"></span></p> </div><hr>
+                 <div class="summary-section"> <h2>3. Estructura</h2> <p><strong>Modelo Principal:</strong> <span id="resumen-estructura-modelo" class="summary-value"></span></p> <p><strong>Intermediarios:</strong> <span id="resumen-estructura-intermediarios" class="summary-value"></span></p> <p><strong>Roles:</strong> <span id="resumen-estructura-roles" class="summary-value"></span></p> <p><strong>Costos/Márgenes:</strong> <span id="resumen-estructura-costos" class="summary-value"></span></p> <p><strong>Alcance:</strong> <span id="resumen-estructura-alcance" class="summary-value"></span></p> <p><strong>Justificación:</strong> <span id="resumen-estructura-justificacion" class="summary-value"></span></p> </div><hr>
+                 <div class="summary-section"> <h2>4. Venta</h2> <p><strong>Modelo Ingresos:</strong> <span id="resumen-venta-tipo" class="summary-value"></span></p> <p><strong>Proceso Venta:</strong> <span id="resumen-venta-proceso" class="summary-value"></span></p> <p><strong>Pricing:</strong> <span id="resumen-venta-pricing" class="summary-value"></span></p> <p><strong>Márgenes:</strong> <span id="resumen-venta-margen" class="summary-value"></span></p> </div><hr>
+                 <div class="summary-section"> <h2>5. Redes</h2> <p><strong>Alianzas:</strong> <span id="resumen-redes-alianzas" class="summary-value"></span></p> <p><strong>Objetivos:</strong> <span id="resumen-redes-objetivos" class="summary-value"></span></p> <p><strong>Condiciones:</strong> <span id="resumen-redes-condiciones" class="summary-value"></span></p> <p><strong>Gestión:</strong> <span id="resumen-redes-gestion" class="summary-value"></span></p> </div><hr>
+                 <div class="summary-section"> <h2>6. Cadena Valor</h2> <p><strong>Modelo:</strong> <span id="resumen-cadena-modelo" class="summary-value"></span></p> <p><strong>Actividades:</strong> <span id="resumen-cadena-actividades" class="summary-value"></span></p> <p><strong>Recursos:</strong> <span id="resumen-cadena-recursos" class="summary-value"></span></p> <p><strong>Ventaja:</strong> <span id="resumen-cadena-ventaja" class="summary-value"></span></p> <p><strong>Optimizaciones:</strong> <span id="resumen-cadena-optimizacion" class="summary-value"></span></p> </div>
+
+                 <hr style="border-top: 1px solid #dee2e6; opacity: 1;">
+                 <p class="creator-credit" style="margin-top: 15px; margin-bottom: 20px;">Resumen generado | Created by Sebastian Pulido Forero</p>
+                 <p style="text-align: center; margin-top: 40px; font-style: italic;">--- Fin del Resumen ---</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript Integrado (Con logs de depuración en navegación) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Selectores (igual) ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            // IMPORTANTE: Asegúrate que el selector recoja TODAS las secciones
+            const contentSections = document.querySelectorAll('.main-content > .content-section');
+            console.log(`Found ${contentSections.length} content sections.`); // Log: ¿Cuántas secciones se encontraron?
+            const saveButtons = document.querySelectorAll('.save-btn');
+            const saveProjectInfoBtn = document.getElementById('save-project-info-btn');
+            const createProjectBtn = document.getElementById('create-project-btn');
+            const logoutButton = document.getElementById('logout-button');
+
+            // --- Variables globales (igual) ---
+            let currentProjectName = '';
+            let currentTeamMembersHTML = '';
+
+            // --- Guardar Info Proyecto (Dashboard - igual) ---
+             if (saveProjectInfoBtn) { /* ... (código igual) ... */ }
+
+            // --- Navegación (REVISADA CON LOGS) ---
+             navLinks.forEach(link => {
+                 link.addEventListener('click', (event) => {
+                     event.preventDefault();
+                     const targetSectionId = link.getAttribute('data-section');
+                     console.log(`[Nav] Clicked link for section: ${targetSectionId}`); // Log
+
+                     // Ocultar todas las secciones
+                     contentSections.forEach(section => {
+                         section.classList.remove('active');
+                         // console.log(`[Nav] Removed 'active' from: ${section.id}`); // Log detallado (opcional)
+                     });
+                     // Desactivar todos los links
+                     navLinks.forEach(nav => nav.classList.remove('active'));
+
+                     // Encontrar la sección objetivo
+                     const targetSection = document.getElementById(`${targetSectionId}-section`);
+                     console.log(`[Nav] Attempting to find element with ID: ${targetSectionId}-section`); // Log
+
+                     if (targetSection) {
+                         console.log(`[Nav] Found section element:`, targetSection); // Log
+                         // Mostrar sección objetivo
+                         targetSection.classList.add('active');
+                         // Activar link clickeado
+                         link.classList.add('active');
+                         console.log(`[Nav] Added 'active' class to section ${targetSection.id} and link.`); // Log
+
+                         // Generar resumen si es la sección de resumen
+                         if (targetSectionId === 'resumen') {
+                             console.log("[Nav] Generating summary...");
+                             generarResumen();
+                             const statusIndicator = document.getElementById(`status-resumen`);
+                             if(statusIndicator) statusIndicator.classList.add('completed');
+                         }
+                     } else {
+                          // Error si no se encuentra la sección
+                          console.error(`[Nav] Target section element not found for ID: ${targetSectionId}-section. Check HTML IDs and class 'content-section'.`);
+                     }
+                 });
+             });
+
+            // --- Simulación Guardado Secciones (igual) ---
+            saveButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const sectionId = button.getAttribute('data-section');
+                    console.log(`[Save] Pseudo-saving data for section: ${sectionId}`); // Log
+                    const statusIndicator = document.getElementById(`status-${sectionId}`);
+                    if (statusIndicator) { statusIndicator.classList.add('completed'); }
+                    // Feedback visual (igual)
+                    button.textContent = 'Guardado ✓';
+                    button.disabled = true;
+                    setTimeout(() => { /* ... */ }, 1500);
+                });
+            });
+
+
+            // --- Botones Simulados Adicionales (igual) ---
+            if (createProjectBtn) { /* ... */ }
+            if (logoutButton) { /* ... */ }
+
+            // --- Config Inicial (REVISADA) ---
+            const initialSection = document.getElementById('dashboard-section');
+            const initialLink = document.querySelector('.nav-link[data-section="dashboard"]');
+            if (initialSection) {
+                initialSection.classList.add('active');
+                console.log("[Init] Dashboard section activated.");
+            } else {
+                console.error("[Init] Dashboard section not found!");
+            }
+            if (initialLink) {
+                initialLink.classList.add('active');
+            } else {
+                 console.error("[Init] Dashboard nav link not found!");
+            }
+            // Configurar texto botones guardar (igual)
+            saveButtons.forEach(button => {
+                 const sectionId = button.getAttribute('data-section');
+                 const sectionNum = getSectionNumber(sectionId);
+                 button.textContent = sectionNum ? `Guardar Sección ${sectionNum}` : `Guardar ${getSectionName(sectionId)}`;
+             });
+
+
+            // --- Función para obtener valor (igual que V4) ---
+            function getValueForSummary(elementId, defaultValue = '(No especificado)') {
+                const element = document.getElementById(elementId);
+                const noDataHtml = `<span class="summary-value no-data">${defaultValue}</span>`;
+                if (!element) { console.warn(`getValueForSummary: Element ${elementId} not found.`); return noDataHtml; }
+                let rawValueHTML = '';
+                if (element.tagName === 'SELECT') { rawValueHTML = element.value ? element.options[element.selectedIndex].text : ''; }
+                else if (element.tagName === 'DIV' && element.isContentEditable) { rawValueHTML = element.innerHTML; }
+                else { rawValueHTML = element.value; } // Inputs
+                const checkValue = rawValueHTML.replace(/<[^>]*>/g, '').trim();
+                if (checkValue === '') return noDataHtml;
+                return `<span class="summary-value">${rawValueHTML}</span>`; // SIN SANITIZAR
+            }
+
+            // --- Funciones Checkboxes (igual) ---
+            function getCheckboxValues(name, otherInputId = null) { /* ... igual ... */ }
+            function displayCheckboxSummary(name, otherId, targetUlId, targetOtrosDivId) { /* ... igual ... */ }
+
+            // --- Función Principal para Generar el Resumen (igual que V4.1) ---
+            function generarResumen() {
+                console.log("[Summary] Generating summary...");
+                const assignSummaryHtml = (targetId, sourceId, isProjectData = false, projectDataValue = '') => {
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        if (isProjectData) {
+                            const dataValue = projectDataValue;
+                            targetElement.innerHTML = dataValue.trim() ? `<span class="summary-value">${dataValue}</span>` : `<span class="summary-value no-data">(No especificado)</span>`;
+                        } else {
+                            targetElement.innerHTML = getValueForSummary(sourceId);
+                        }
+                    } else { console.warn(`[Summary] Target element ${targetId} not found.`); }
+                };
+                 // Info Proyecto
+                 assignSummaryHtml('resumen-project-name', null, true, currentProjectName);
+                 assignSummaryHtml('resumen-team-members', null, true, currentTeamMembersHTML);
+                // Secciones 1-6
+                assignSummaryHtml('resumen-segmento-necesidad', 'segmento-necesidad');
+                assignSummaryHtml('resumen-segmento-demografia', 'segmento-demografia');
+                assignSummaryHtml('resumen-segmento-psicografia', 'segmento-psicografia');
+                assignSummaryHtml('resumen-segmento-geografia', 'segmento-geografia');
+                assignSummaryHtml('resumen-segmento-conductual', 'segmento-conductual');
+                assignSummaryHtml('resumen-segmento-tamano', 'segmento-tamano');
+                assignSummaryHtml('resumen-segmento-justificacion', 'segmento-justificacion');
+                displayCheckboxSummary('canales_com_online', 'canales-com-online-otros', 'resumen-canales-com-online', 'resumen-canales-com-online-otros');
+                displayCheckboxSummary('canales_venta_online', 'canales-venta-online-otros', 'resumen-canales-venta-online', 'resumen-canales-venta-online-otros');
+                displayCheckboxSummary('canales_fisicos', 'canales-fisicos-otros', 'resumen-canales-fisicos', 'resumen-canales-fisicos-otros');
+                assignSummaryHtml('resumen-canales-justificacion', 'canales-justificacion');
+                assignSummaryHtml('resumen-estructura-modelo', 'estructura-modelo');
+                assignSummaryHtml('resumen-estructura-intermediarios', 'estructura-intermediarios-detalle');
+                assignSummaryHtml('resumen-estructura-roles', 'estructura-roles');
+                assignSummaryHtml('resumen-estructura-costos', 'estructura-costos');
+                assignSummaryHtml('resumen-estructura-alcance', 'estructura-alcance');
+                assignSummaryHtml('resumen-estructura-justificacion', 'estructura-justificacion');
+                assignSummaryHtml('resumen-venta-tipo', 'venta-tipo');
+                assignSummaryHtml('resumen-venta-proceso', 'venta-proceso');
+                assignSummaryHtml('resumen-venta-pricing', 'venta-pricing');
+                assignSummaryHtml('resumen-venta-margen', 'venta-margen');
+                assignSummaryHtml('resumen-redes-alianzas', 'redes-alianzas');
+                assignSummaryHtml('resumen-redes-objetivos', 'redes-objetivos');
+                assignSummaryHtml('resumen-redes-condiciones', 'redes-condiciones');
+                assignSummaryHtml('resumen-redes-gestion', 'redes-gestion');
+                assignSummaryHtml('resumen-cadena-modelo', 'cadena-modelo');
+                assignSummaryHtml('resumen-cadena-actividades', 'cadena-actividades');
+                assignSummaryHtml('resumen-cadena-recursos', 'cadena-recursos');
+                assignSummaryHtml('resumen-cadena-ventaja', 'cadena-ventaja');
+                assignSummaryHtml('resumen-cadena-optimizacion', 'cadena-optimizacion');
+            }
+
+            // --- Funciones Auxiliares (igual) ---
+            function getSectionName(sectionId) {
+                 const link = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+                 return link ? link.textContent.replace(/✓/g, '').replace(/^\d+\.\s*/, '').trim() : sectionId;
+             }
+            function getSectionNumber(sectionId) {
+                 const link = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+                 const match = link ? link.textContent.match(/^(\d+)\./) : null;
+                 return match ? match[1] : null;
+             }
+
+        });
+    </script>
+</body>
+</html>
